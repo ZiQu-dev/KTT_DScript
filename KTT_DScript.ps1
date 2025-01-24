@@ -115,29 +115,30 @@ switch ($choice) {
         $instanceDirs = @()
 
         if (Test-Path -Path $minecraftDir) {
-            $minecraftInstances = Get-ChildItem -Path $minecraftDir -Directory | Select-Object -ExpandProperty Name
+            $minecraftInstances = Get-ChildItem -Path $minecraftDir -Directory | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Oficjalny Launcher)" }
             $instanceDirs += $minecraftInstances
         }
 
         if (Test-Path -Path $prismLauncherDir) {
-            $prismInstances = Get-ChildItem -Path $prismLauncherDir -Directory | Select-Object -ExpandProperty Name
+            $prismInstances = Get-ChildItem -Path $prismLauncherDir -Directory | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Prism Launcher)" }
             $instanceDirs += $prismInstances
         }
 
         if (Test-Path -Path $fjordLauncherDir) {
-            $fjordInstances = Get-ChildItem -Path $fjordLauncherDir -Directory | Select-Object -ExpandProperty Name
+            $fjordInstances = Get-ChildItem -Path $fjordLauncherDir -Directory | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Fjord Launcher)" }
             $instanceDirs += $fjordInstances
         }
 
         if ($instanceDirs.Count -eq 0) {
             Write-Host "Nie znaleziono zadnych instancji Minecraft." -ForegroundColor Red
+            return
         } else {
             Write-Host "Znalezione instancje Minecraft:" -ForegroundColor Green
             $instanceDirs | ForEach-Object { Write-Host $_ -ForegroundColor Cyan }
         }
 
-        $sourceInstance = Read-Host "Podaj nazwe instancji z ktorej chcesz przeniesc pliki konfiguracyjne" -ForegroundColor Yellow
-        $destinationInstance = Read-Host "Podaj nazwe instancji do ktorej chcesz przeniesc pliki konfiguracyjne" -ForegroundColor Yellow
+        $sourceInstance = Read-Host "Podaj nazwe instancji z ktorej chcesz przeniesc pliki konfiguracyjne" 
+        $destinationInstance = Read-Host "Podaj nazwe instancji do ktorej chcesz przeniesc pliki konfiguracyjne" 
 
         $sourcePath = ""
         $destinationPath = ""
@@ -174,6 +175,7 @@ switch ($choice) {
             Write-Host "Plik 'options.txt' nie istnieje w instancji zrodlowej." -ForegroundColor Red
         }
     }
+    
     "6" {
         exit
     }
