@@ -26,6 +26,15 @@ while ($true) {
     switch ($choice) {
         "1" {
             Write-Host "Wybrano: Oficjalny launcher Minecraft Premium." -ForegroundColor Green
+            
+            $userProfile = [Environment]::GetFolderPath("UserProfile")
+            $minecraftDir = Join-Path $userProfile "AppData\Roaming\.minecraft"
+            
+            if (-Not (Test-Path -Path $minecraftDir)) {
+                Write-Host "Nie znaleziono folderu .minecraft. Twoja instalacja Minecraft moze byc uszkodzona" -ForegroundColor Red
+                return
+            }
+
             # Pobieranie plikow
             $scriptPath = (Get-Location).Path
             $file1 = Join-Path $scriptPath "Battles.mrpack"
@@ -37,7 +46,6 @@ while ($true) {
             DownloadFileIfNotExists -url "https://dobraszajba.com:8000/fabric-installer-1.0.1.exe" -destinationPath $fabricInstaller
 
             # Instalacja Fabric
-            $userProfile = [Environment]::GetFolderPath("UserProfile")
             $outputDir = Join-Path $userProfile "AppData\Roaming\.minecraft"
             Start-Process -FilePath "java" -ArgumentList "-jar `"$fabricInstaller`" client -dir `"$outputDir`" -mcversion 1.20.4" -Wait
             Write-Host "Zakonczono instalacje Fabric" -ForegroundColor Green
@@ -49,10 +57,10 @@ while ($true) {
             # Zapytanie o usuniecie plikow
             $removeFiles = Read-Host "Czy chcesz usunac pobrane pliki instalacyjne? (y/n)"
             if ($removeFiles -eq "y") {
-                Remove-Item -Path $file1, $file2, $fabricInstaller -Force
-                Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
+            Remove-Item -Path $file1, $file2, $fabricInstaller -Force
+            Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
             } else {
-                Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
+            Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
             }
         }
         "2" {
