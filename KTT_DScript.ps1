@@ -105,77 +105,82 @@ switch ($choice) {
         Write-Host "Ta opcja nie jest jeszcze dostepna (Work in progress)" -ForegroundColor Yellow
     }
     "5" {
-        Write-Host "Wybrano: Przenoszenie plikow konfiguracyjnych miedzy instancjami." -ForegroundColor Yellow
-        Write-Host "Szukam instancji Minecraft..." -ForegroundColor Yellow
-        $userProfile = [Environment]::GetFolderPath("UserProfile")
-        $minecraftDir = Join-Path $userProfile ".\AppData\Roaming\.minecraft\versions"
-        $prismLauncherDir = Join-Path $userProfile ".\AppData\Roaming\PrismLauncher\instances"
-        $fjordLauncherDir = Join-Path $userProfile ".\AppData\Roaming\FjordLauncher\instances"
+        function TransferConfigFiles {
+            Write-Host "Szukam instancji Minecraft..." -ForegroundColor Yellow
+            $userProfile = [Environment]::GetFolderPath("UserProfile")
+            $minecraftDir = Join-Path $userProfile ".\AppData\Roaming\.minecraft\versions"
+            $prismLauncherDir = Join-Path $userProfile ".\AppData\Roaming\PrismLauncher\instances"
+            $fjordLauncherDir = Join-Path $userProfile ".\AppData\Roaming\FjordLauncher\instances"
 
-        $instanceDirs = @()
+            $instanceDirs = @()
 
-        if (Test-Path -Path $minecraftDir) {
-            $minecraftInstances = Get-ChildItem -Path $minecraftDir -Directory | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Oficjalny Launcher)" }
-            $instanceDirs += $minecraftInstances
+            if (Test-Path -Path $minecraftDir) {
+                $minecraftInstances = Get-ChildItem -Path $minecraftDir -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName "minecraft\options.txt") } | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Oficjalny Launcher)" }
+                $instanceDirs += $minecraftInstances
+            }
+
+            if (Test-Path -Path $prismLauncherDir) {
+                $prismInstances = Get-ChildItem -Path $prismLauncherDir -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName "minecraft\options.txt") } | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Prism Launcher)" }
+                $instanceDirs += $prismInstances
+            }
+
+            if (Test-Path -Path $fjordLauncherDir) {
+                $fjordInstances = Get-ChildItem -Path $fjordLauncherDir -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName "minecraft\options.txt") } | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Fjord Launcher)" }
+                $instanceDirs += $fjordInstances
+            }
+
+            if ($instanceDirs.Count -eq 0) {
+                Write-Host "Nie znaleziono zadnych instancji Minecraft z plikiem 'options.txt'." -ForegroundColor Red
+                return
+            } else {
+                Write-Host "Znalezione instancje Minecraft:" -ForegroundColor Green
+                $instanceDirs | ForEach-Object { Write-Host $_ -ForegroundColor Cyan }
+            }
+
+            $sourceInstance = Read-Host "Podaj nazwe instancji z ktorej chcesz przeniesc pliki konfiguracyjne" 
+            $destinationInstance = Read-Host "Podaj nazwe instancji do ktorej chcesz przeniesc pliki konfiguracyjne" 
+
+            $sourcePath = ""
+            $destinationPath = ""
+
+            if (Test-Path -Path (Join-Path $minecraftDir $sourceInstance)) {
+                $sourcePath = Join-Path $minecraftDir $sourceInstance
+            } elseif (Test-Path -Path (Join-Path $prismLauncherDir $sourceInstance)) {
+                $sourcePath = Join-Path $prismLauncherDir $sourceInstance
+            } elseif (Test-Path -Path (Join-Path $fjordLauncherDir $sourceInstance)) {
+                $sourcePath = Join-Path $fjordLauncherDir $sourceInstance
+            } else {
+                throw "Nie znaleziono instancji zrodlowej."
+            }
+
+            if (Test-Path -Path (Join-Path $minecraftDir $destinationInstance)) {
+                $destinationPath = Join-Path $minecraftDir $destinationInstance
+            } elseif (Test-Path -Path (Join-Path $prismLauncherDir $destinationInstance)) {
+                $destinationPath = Join-Path $prismLauncherDir $destinationInstance
+            } elseif (Test-Path -Path (Join-Path $fjordLauncherDir $destinationInstance)) {
+                $destinationPath = Join-Path $fjordLauncherDir $destinationInstance
+            } else {
+                throw "Nie znaleziono instancji docelowej."
+            }
+
+            $sourceOptionsPath = Join-Path $sourcePath "minecraft\options.txt"
+            $destinationOptionsPath = Join-Path $destinationPath "minecraft\options.txt"
+
+            if (Test-Path -Path $sourceOptionsPath) {
+                Copy-Item -Path $sourceOptionsPath -Destination $destinationOptionsPath -Force
+                Write-Host "Plik 'options.txt' zostal skopiowany z $sourceInstance do $destinationInstance." -ForegroundColor Green
+            } else {
+                throw "Plik 'options.txt' nie istnieje w instancji zrodlowej."
+            }
         }
 
-        if (Test-Path -Path $prismLauncherDir) {
-            $prismInstances = Get-ChildItem -Path $prismLauncherDir -Directory | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Prism Launcher)" }
-            $instanceDirs += $prismInstances
-        }
-
-        if (Test-Path -Path $fjordLauncherDir) {
-            $fjordInstances = Get-ChildItem -Path $fjordLauncherDir -Directory | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Fjord Launcher)" }
-            $instanceDirs += $fjordInstances
-        }
-
-        if ($instanceDirs.Count -eq 0) {
-            Write-Host "Nie znaleziono zadnych instancji Minecraft." -ForegroundColor Red
-            return
-        } else {
-            Write-Host "Znalezione instancje Minecraft:" -ForegroundColor Green
-            $instanceDirs | ForEach-Object { Write-Host $_ -ForegroundColor Cyan }
-        }
-
-        $sourceInstance = Read-Host "Podaj nazwe instancji z ktorej chcesz przeniesc pliki konfiguracyjne" 
-        $destinationInstance = Read-Host "Podaj nazwe instancji do ktorej chcesz przeniesc pliki konfiguracyjne" 
-
-        $sourcePath = ""
-        $destinationPath = ""
-
-        if (Test-Path -Path (Join-Path $minecraftDir $sourceInstance)) {
-            $sourcePath = Join-Path $minecraftDir $sourceInstance
-        } elseif (Test-Path -Path (Join-Path $prismLauncherDir $sourceInstance)) {
-            $sourcePath = Join-Path $prismLauncherDir $sourceInstance
-        } elseif (Test-Path -Path (Join-Path $fjordLauncherDir $sourceInstance)) {
-            $sourcePath = Join-Path $fjordLauncherDir $sourceInstance
-        } else {
-            Write-Host "Nie znaleziono instancji zrodlowej." -ForegroundColor Red
-            return
-        }
-
-        if (Test-Path -Path (Join-Path $minecraftDir $destinationInstance)) {
-            $destinationPath = Join-Path $minecraftDir $destinationInstance
-        } elseif (Test-Path -Path (Join-Path $prismLauncherDir $destinationInstance)) {
-            $destinationPath = Join-Path $prismLauncherDir $destinationInstance
-        } elseif (Test-Path -Path (Join-Path $fjordLauncherDir $destinationInstance)) {
-            $destinationPath = Join-Path $fjordLauncherDir $destinationInstance
-        } else {
-            Write-Host "Nie znaleziono instancji docelowej." -ForegroundColor Red
-            return
-        }
-
-        $sourceOptionsPath = Join-Path $sourcePath "minecraft\options.txt"
-        $destinationOptionsPath = Join-Path $destinationPath "minecraft\options.txt"
-
-        if (Test-Path -Path $sourceOptionsPath) {
-            Copy-Item -Path $sourceOptionsPath -Destination $destinationOptionsPath -Force
-            Write-Host "Plik 'options.txt' zostal skopiowany z $sourceInstance do $destinationInstance." -ForegroundColor Green
-        } else {
-            Write-Host "Plik 'options.txt' nie istnieje w instancji zrodlowej." -ForegroundColor Red
+        try {
+            TransferConfigFiles
+        } catch {
+            Write-Host "Wystapil blad: $_. Ponawianie operacji..." -ForegroundColor Red
+            TransferConfigFiles
         }
     }
-    
     "6" {
         exit
     }
