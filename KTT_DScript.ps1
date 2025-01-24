@@ -28,11 +28,11 @@ while ($true) {
             Write-Host "Wybrano: Oficjalny launcher Minecraft Premium." -ForegroundColor Green
             # Pobieranie plikow
             $scriptPath = (Get-Location).Path
-            $file1 = Join-Path $scriptPath "KTT MiniGry Alpha.mrpack"
+            $file1 = Join-Path $scriptPath "Battles.mrpack"
             $file2 = Join-Path $scriptPath "mrpack-downloader-win.exe"
             $fabricInstaller = Join-Path $scriptPath "fabric-installer-1.0.1.exe"
 
-            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/KTT%20MiniGry%20Alpha.mrpack" -destinationPath $file1
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Battles.mrpack" -destinationPath $file1
             DownloadFileIfNotExists -url "https://dobraszajba.com:8000/mrpack-downloader-win.exe" -destinationPath $file2
             DownloadFileIfNotExists -url "https://dobraszajba.com:8000/fabric-installer-1.0.1.exe" -destinationPath $fabricInstaller
 
@@ -63,8 +63,12 @@ while ($true) {
             $prismLauncherDir = Join-Path $userProfile "AppData\Roaming\PrismLauncher"
             $configFile = Join-Path $prismLauncherDir "prismlauncher.cfg"
             $scriptPath = (Get-Location).Path
-            $file1 = Join-Path $scriptPath "KTT MiniGry Alpha.mrpack"
-            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/KTT%20MiniGry%20Alpha.mrpack" -destinationPath $file1
+            $mrpack1 = Join-Path $scriptPath "Battles.mrpack"
+            $mrpack2 = Join-Path $scriptPath "ZENA.mrpack"
+            $mrpack3 = Join-Path $scriptPath "Bingo.mrpack"
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Battles.mrpack" -destinationPath $mrpack1
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/ZENA.mrpack" -destinationPath $mrpack2
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Bingo.mrpack" -destinationPath $mrpack3
             # Sprawdzenie, czy plik istnieje i zawiera dane
             if (Test-Path -Path $configFile) {
             $fileContent = Get-Content -Path $configFile -ErrorAction Stop
@@ -113,8 +117,12 @@ while ($true) {
             $fjordLauncherDir = Join-Path $userProfile "AppData\Roaming\FjordLauncher"
             $configFile = Join-Path $fjordLauncherDir "fjordlauncher.cfg"
             $scriptPath = (Get-Location).Path
-            $file1 = Join-Path $scriptPath "KTT MiniGry Alpha.mrpack"
-            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/KTT%20MiniGry%20Alpha.mrpack" -destinationPath $file1
+            $mrpack1 = Join-Path $scriptPath "Battles.mrpack"
+            $mrpack2 = Join-Path $scriptPath "ZENA.mrpack"
+            $mrpack3 = Join-Path $scriptPath "Bingo.mrpack"
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Battles.mrpack" -destinationPath $mrpack1
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/ZENA.mrpack" -destinationPath $mrpack2
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Bingo.mrpack" -destinationPath $mrpack3
             
             if (Test-Path -Path $configFile) {
             $fileContent = Get-Content -Path $configFile -ErrorAction Stop
