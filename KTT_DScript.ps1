@@ -62,14 +62,16 @@ while ($true) {
             $userProfile = [Environment]::GetFolderPath("UserProfile")
             $prismLauncherDir = Join-Path $userProfile "AppData\Roaming\PrismLauncher"
             $configFile = Join-Path $prismLauncherDir "prismlauncher.cfg"
-
+            $scriptPath = (Get-Location).Path
+            $file1 = Join-Path $scriptPath "KTT MiniGry Alpha.mrpack"
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/KTT%20MiniGry%20Alpha.mrpack" -destinationPath $file1
             # Sprawdzenie, czy plik istnieje i zawiera dane
             if (Test-Path -Path $configFile) {
-                $fileContent = Get-Content -Path $configFile -ErrorAction Stop
-                if ($fileContent.Trim() -ne "") {
-                    Write-Host "Plik 'prismlauncher.cfg' znaleziony i zawiera dane. Pomijanie instalacji." -ForegroundColor Green
-                    return
-                }
+            $fileContent = Get-Content -Path $configFile -ErrorAction Stop
+            if ($fileContent.Trim() -ne "") {
+                Write-Host "Plik 'prismlauncher.cfg' znaleziony i zawiera dane. Pomijanie instalacji." -ForegroundColor Green
+                return
+            }
             }
             
             Write-Host "Plik 'prismlauncher.cfg' nie istnieje lub jest pusty. Pobieranie instalatora Prism Launcher..." -ForegroundColor Yellow
@@ -80,7 +82,7 @@ while ($true) {
             $installPath = Join-Path $userProfile "AppData\Local\Programs\PrismLauncher"
             
             if (-Not (Test-Path -Path $installPath)) {
-                mkdir $installPath
+            mkdir $installPath
             }
             
             Expand-Archive -Path $installerPath -DestinationPath $installPath -Force
@@ -91,14 +93,18 @@ while ($true) {
             $targetPath = Join-Path $installPath "PrismLauncher.exe"
             
             if (-Not (Test-Path -Path $shortcutPath)) {
-                $WScriptShell = New-Object -ComObject WScript.Shell
-                $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
-                $shortcut.TargetPath = $targetPath
-                $shortcut.Save()
-                Write-Host "Skrot do PrismLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
+            $WScriptShell = New-Object -ComObject WScript.Shell
+            $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath = $targetPath
+            $shortcut.Save()
+            Write-Host "Skrot do PrismLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
             } else {
-                Write-Host "Skrot do PrismLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
+            Write-Host "Skrot do PrismLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
             }
+
+            # Uruchomienie Prism Launcher
+            Start-Process -FilePath $targetPath
+            Write-Host "Prism Launcher zostal uruchomiony." -ForegroundColor Green
         }
         "3" {
             Write-Host "Wybrano: Fjord Launcher dla uzytkownikow Minecraft Non-Premium." -ForegroundColor Green
@@ -106,13 +112,16 @@ while ($true) {
             $userProfile = [Environment]::GetFolderPath("UserProfile")
             $fjordLauncherDir = Join-Path $userProfile "AppData\Roaming\FjordLauncher"
             $configFile = Join-Path $fjordLauncherDir "fjordlauncher.cfg"
+            $scriptPath = (Get-Location).Path
+            $file1 = Join-Path $scriptPath "KTT MiniGry Alpha.mrpack"
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/KTT%20MiniGry%20Alpha.mrpack" -destinationPath $file1
             
             if (Test-Path -Path $configFile) {
-                $fileContent = Get-Content -Path $configFile -ErrorAction Stop
-                if ($fileContent.Trim() -ne "") {
-                    Write-Host "Plik 'fjordlauncher.cfg' znaleziony i zawiera dane. Pomijanie instalacji." -ForegroundColor Green
-                    return
-                }
+            $fileContent = Get-Content -Path $configFile -ErrorAction Stop
+            if ($fileContent.Trim() -ne "") {
+                Write-Host "Plik 'fjordlauncher.cfg' znaleziony i zawiera dane. Pomijanie instalacji." -ForegroundColor Green
+                return
+            }
             }
             
             Write-Host "Plik 'fjordlauncher.cfg' nie istnieje lub jest pusty. Pobieranie instalatora Fjord Launcher..." -ForegroundColor Yellow
@@ -124,7 +133,7 @@ while ($true) {
             $installPath = Join-Path $userProfile "AppData\Local\Programs\FjordLauncher"
             
             if (-Not (Test-Path -Path $installPath)) {
-                mkdir $installPath
+            mkdir $installPath
             }
             
             Expand-Archive -Path $installerPath -DestinationPath $installPath -Force
@@ -136,14 +145,18 @@ while ($true) {
             $targetPath = Join-Path $installPath "FjordLauncher.exe"
             
             if (-Not (Test-Path -Path $shortcutPath)) {
-                $WScriptShell = New-Object -ComObject WScript.Shell
-                $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
-                $shortcut.TargetPath = $targetPath
-                $shortcut.Save()
-                Write-Host "Skrot do FjordLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
+            $WScriptShell = New-Object -ComObject WScript.Shell
+            $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath = $targetPath
+            $shortcut.Save()
+            Write-Host "Skrot do FjordLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
             } else {
-                Write-Host "Skrot do FjordLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
+            Write-Host "Skrot do FjordLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
             }
+
+            # Uruchomienie Fjord Launcher
+            Start-Process -FilePath $targetPath
+            Write-Host "Fjord Launcher zostal uruchomiony." -ForegroundColor Green
         }
         "4" {
             Write-Host "Wybrano: Przywracanie konfiguracji Minecraft sprzed instalacji." -ForegroundColor Yellow
