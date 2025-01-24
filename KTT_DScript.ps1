@@ -12,7 +12,7 @@ function DownloadFileIfNotExists {
     }
 }
 
-
+while ($true) {
     Write-Host "Wybierz jedna z ponizszych opcji:" -ForegroundColor Cyan
     Write-Host "1: Jestem uzytkownikiem Minecraft Premium i chce uzyc oficjalnego launchera (UZYWAC TYLKO W OSTATECZNOSCI)" -ForegroundColor Red -BackgroundColor Gray
     Write-Host "2: Jestem uzytkownikiem Minecraft Premium i chce uzyc Prism Launcher (rekomendowane)"
@@ -23,218 +23,215 @@ function DownloadFileIfNotExists {
     
     $choice = Read-Host "Wpisz numer odpowiadajacy Twojemu wyborowi"
     
+    switch ($choice) {
+        "1" {
+            Write-Host "Wybrano: Oficjalny launcher Minecraft Premium." -ForegroundColor Green
+            # Pobieranie plikow
+            $scriptPath = (Get-Location).Path
+            $file1 = Join-Path $scriptPath "KTT MiniGry Alpha.mrpack"
+            $file2 = Join-Path $scriptPath "mrpack-downloader-win.exe"
+            $fabricInstaller = Join-Path $scriptPath "fabric-installer-1.0.1.exe"
 
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/KTT%20MiniGry%20Alpha.mrpack" -destinationPath $file1
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/mrpack-downloader-win.exe" -destinationPath $file2
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/fabric-installer-1.0.1.exe" -destinationPath $fabricInstaller
 
-switch ($choice) {
-    "1" {
-        Write-Host "Wybrano: Oficjalny launcher Minecraft Premium." -ForegroundColor Green
-        # Pobieranie plikow
-        $scriptPath = (Get-Location).Path
-        $file1 = Join-Path $scriptPath "KTT MiniGry Alpha.mrpack"
-        $file2 = Join-Path $scriptPath "mrpack-downloader-win.exe"
-        $fabricInstaller = Join-Path $scriptPath "fabric-installer-1.0.1.exe"
-
-        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/KTT%20MiniGry%20Alpha.mrpack" -destinationPath $file1
-        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/mrpack-downloader-win.exe" -destinationPath $file2
-        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/fabric-installer-1.0.1.exe" -destinationPath $fabricInstaller
-
-        # Instalacja Fabric
-        $userProfile = [Environment]::GetFolderPath("UserProfile")
-        $outputDir = Join-Path $userProfile "AppData\Roaming\.minecraft"
-        Start-Process -FilePath "java" -ArgumentList "-jar `"$fabricInstaller`" client -dir `"$outputDir`" -mcversion 1.20.4" -Wait
-        Write-Host "Zakonczono instalacje Fabric" -ForegroundColor Green
-
-        # Uruchamianie mrpack-downloader-win.exe
-        Start-Process -FilePath $file2 -ArgumentList "`"$file1`" `"$outputDir`"" -Wait
-        Write-Host "Zakonczono proces uruchamiania mrpack-downloader-win.exe" -ForegroundColor Green
-
-        # Zapytanie o usuniecie plikow
-        $removeFiles = Read-Host "Czy chcesz usunac pobrane pliki instalacyjne? (y/n)"
-        if ($removeFiles -eq "y") {
-            Remove-Item -Path $file1, $file2, $fabricInstaller -Force
-            Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
-        } else {
-            Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
-        }
-    }
-    "2" {
-
-        Write-Host "Wybrano: Prism Launcher (rekomendowane dla uzytkownikow Minecraft Premium)." -ForegroundColor Green
-        
-        # Okreslenie sciezki do pliku konfiguracyjnego
-        $userProfile = [Environment]::GetFolderPath("UserProfile")
-        $prismLauncherDir = Join-Path $userProfile "AppData\Roaming\PrismLauncher"
-        $configFile = Join-Path $prismLauncherDir "prismlauncher.cfg"
-
-        # Sprawdzenie, czy plik istnieje i zawiera dane
-        if (Test-Path -Path $configFile) {
-            $fileContent = Get-Content -Path $configFile -ErrorAction Stop
-            if ($fileContent.Trim() -ne "") {
-                Write-Host "Plik 'prismlauncher.cfg' znaleziony i zawiera dane. Pomijanie instalacji." -ForegroundColor Green
-                return
-            }
-        }
-        
-        Write-Host "Plik 'prismlauncher.cfg' nie istnieje lub jest pusty. Pobieranie instalatora Prism Launcher..." -ForegroundColor Yellow
-        
-        $tempPath = [System.IO.Path]::GetTempPath()
-        $installerPath = Join-Path $tempPath "PrismLauncher-Windows-MinGW-w64-9.2.zip"
-        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/PrismLauncher-Windows-MinGW-w64-9.2.zip" -destinationPath $installerPath
-        $installPath = Join-Path $userProfile "AppData\Local\Programs\PrismLauncher"
-        
-        if (-Not (Test-Path -Path $installPath)) {
-            mkdir $installPath
-        }
-        
-        Expand-Archive -Path $installerPath -DestinationPath $installPath -Force
-        Write-Host "Instalacja Prism Launcher zakonczona." -ForegroundColor Green
-
-        $desktop = [Environment]::GetFolderPath("Desktop")
-        $shortcutPath = Join-Path $desktop "PrismLauncher.lnk"
-        $targetPath = Join-Path $installPath "PrismLauncher.exe"
-        
-        if (-Not (Test-Path -Path $shortcutPath)) {
-            $WScriptShell = New-Object -ComObject WScript.Shell
-            $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
-            $shortcut.TargetPath = $targetPath
-            $shortcut.Save()
-            Write-Host "Skrot do PrismLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
-        } else {
-            Write-Host "Skrot do PrismLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
-        }
-    }
-
-    "3" {
-        Write-Host "Wybrano: Fjord Launcher dla uzytkownikow Minecraft Non-Premium." -ForegroundColor Green
-        
-        $userProfile = [Environment]::GetFolderPath("UserProfile")
-        $fjordLauncherDir = Join-Path $userProfile "AppData\Roaming\FjordLauncher"
-        $configFile = Join-Path $fjordLauncherDir "fjordlauncher.cfg"
-        
-        if (Test-Path -Path $configFile) {
-            $fileContent = Get-Content -Path $configFile -ErrorAction Stop
-            if ($fileContent.Trim() -ne "") {
-                Write-Host "Plik 'fjordlauncher.cfg' znaleziony i zawiera dane. Pomijanie instalacji." -ForegroundColor Green
-                return
-            }
-        }
-        
-        Write-Host "Plik 'fjordlauncher.cfg' nie istnieje lub jest pusty. Pobieranie instalatora Fjord Launcher..." -ForegroundColor Yellow
-        
-        $tempPath = [System.IO.Path]::GetTempPath()
-        $installerPath = Join-Path $tempPath "FjordLauncher-Windows-MinGW-w64-Setup-9.2.1.zip"
-        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/FjordLauncher-Windows-MinGW-w64-9.2.1.zip" -destinationPath $installerPath
-        
-        $installPath = Join-Path $userProfile "AppData\Local\Programs\FjordLauncher"
-        
-        if (-Not (Test-Path -Path $installPath)) {
-            mkdir $installPath
-        }
-        
-        Expand-Archive -Path $installerPath -DestinationPath $installPath -Force
-        Write-Host "Instalacja Fjord Launcher zakonczona." -ForegroundColor Green
-        
-        # Tworzenie skrotu na pulpicie
-        $desktop = [Environment]::GetFolderPath("Desktop")
-        $shortcutPath = Join-Path $desktop "FjordLauncher.lnk"
-        $targetPath = Join-Path $installPath "FjordLauncher.exe"
-        
-        if (-Not (Test-Path -Path $shortcutPath)) {
-            $WScriptShell = New-Object -ComObject WScript.Shell
-            $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
-            $shortcut.TargetPath = $targetPath
-            $shortcut.Save()
-            Write-Host "Skrot do FjordLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
-        } else {
-            Write-Host "Skrot do FjordLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
-        }
-    }
-    "4" {
-        Write-Host "Wybrano: Przywracanie konfiguracji Minecraft sprzed instalacji." -ForegroundColor Yellow
-        # Tutaj mozna dodac kod do przywracania poprzedniej konfiguracji
-        Write-Host "Ta opcja nie jest jeszcze dostepna (Work in progress)" -ForegroundColor Yellow
-    }
-    "5" {
-        function TransferConfigFiles {
-            Write-Host "Szukam instancji Minecraft..." -ForegroundColor Yellow
+            # Instalacja Fabric
             $userProfile = [Environment]::GetFolderPath("UserProfile")
-            $minecraftDir = Join-Path $userProfile ".\AppData\Roaming\.minecraft\versions"
-            $prismLauncherDir = Join-Path $userProfile ".\AppData\Roaming\PrismLauncher\instances"
-            $fjordLauncherDir = Join-Path $userProfile ".\AppData\Roaming\FjordLauncher\instances"
+            $outputDir = Join-Path $userProfile "AppData\Roaming\.minecraft"
+            Start-Process -FilePath "java" -ArgumentList "-jar `"$fabricInstaller`" client -dir `"$outputDir`" -mcversion 1.20.4" -Wait
+            Write-Host "Zakonczono instalacje Fabric" -ForegroundColor Green
 
-            $instanceDirs = @()
+            # Uruchamianie mrpack-downloader-win.exe
+            Start-Process -FilePath $file2 -ArgumentList "`"$file1`" `"$outputDir`"" -Wait
+            Write-Host "Zakonczono proces uruchamiania mrpack-downloader-win.exe" -ForegroundColor Green
 
-            if (Test-Path -Path $minecraftDir) {
-                $minecraftInstances = Get-ChildItem -Path $minecraftDir -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName "minecraft\options.txt") } | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Oficjalny Launcher)" }
-                $instanceDirs += $minecraftInstances
-            }
-
-            if (Test-Path -Path $prismLauncherDir) {
-                $prismInstances = Get-ChildItem -Path $prismLauncherDir -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName "minecraft\options.txt") } | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Prism Launcher)" }
-                $instanceDirs += $prismInstances
-            }
-
-            if (Test-Path -Path $fjordLauncherDir) {
-                $fjordInstances = Get-ChildItem -Path $fjordLauncherDir -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName "minecraft\options.txt") } | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Fjord Launcher)" }
-                $instanceDirs += $fjordInstances
-            }
-
-            if ($instanceDirs.Count -eq 0) {
-                Write-Host "Nie znaleziono zadnych instancji Minecraft z plikiem 'options.txt'." -ForegroundColor Red
-                return
+            # Zapytanie o usuniecie plikow
+            $removeFiles = Read-Host "Czy chcesz usunac pobrane pliki instalacyjne? (y/n)"
+            if ($removeFiles -eq "y") {
+                Remove-Item -Path $file1, $file2, $fabricInstaller -Force
+                Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
             } else {
-                Write-Host "Znalezione instancje Minecraft:" -ForegroundColor Green
-                $instanceDirs | ForEach-Object { Write-Host $_ -ForegroundColor Cyan }
-            }
-
-            $sourceInstance = Read-Host "Podaj nazwe instancji z ktorej chcesz przeniesc pliki konfiguracyjne" 
-            $destinationInstance = Read-Host "Podaj nazwe instancji do ktorej chcesz przeniesc pliki konfiguracyjne" 
-
-            $sourcePath = ""
-            $destinationPath = ""
-
-            if (Test-Path -Path (Join-Path $minecraftDir $sourceInstance)) {
-                $sourcePath = Join-Path $minecraftDir $sourceInstance
-            } elseif (Test-Path -Path (Join-Path $prismLauncherDir $sourceInstance)) {
-                $sourcePath = Join-Path $prismLauncherDir $sourceInstance
-            } elseif (Test-Path -Path (Join-Path $fjordLauncherDir $sourceInstance)) {
-                $sourcePath = Join-Path $fjordLauncherDir $sourceInstance
-            } else {
-                throw "Nie znaleziono instancji zrodlowej."
-            }
-
-            if (Test-Path -Path (Join-Path $minecraftDir $destinationInstance)) {
-                $destinationPath = Join-Path $minecraftDir $destinationInstance
-            } elseif (Test-Path -Path (Join-Path $prismLauncherDir $destinationInstance)) {
-                $destinationPath = Join-Path $prismLauncherDir $destinationInstance
-            } elseif (Test-Path -Path (Join-Path $fjordLauncherDir $destinationInstance)) {
-                $destinationPath = Join-Path $fjordLauncherDir $destinationInstance
-            } else {
-                throw "Nie znaleziono instancji docelowej."
-            }
-
-            $sourceOptionsPath = Join-Path $sourcePath "minecraft\options.txt"
-            $destinationOptionsPath = Join-Path $destinationPath "minecraft\options.txt"
-
-            if (Test-Path -Path $sourceOptionsPath) {
-                Copy-Item -Path $sourceOptionsPath -Destination $destinationOptionsPath -Force
-                Write-Host "Plik 'options.txt' zostal skopiowany z $sourceInstance do $destinationInstance." -ForegroundColor Green
-            } else {
-                throw "Plik 'options.txt' nie istnieje w instancji zrodlowej."
+                Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
             }
         }
+        "2" {
+            Write-Host "Wybrano: Prism Launcher (rekomendowane dla uzytkownikow Minecraft Premium)." -ForegroundColor Green
+            
+            # Okreslenie sciezki do pliku konfiguracyjnego
+            $userProfile = [Environment]::GetFolderPath("UserProfile")
+            $prismLauncherDir = Join-Path $userProfile "AppData\Roaming\PrismLauncher"
+            $configFile = Join-Path $prismLauncherDir "prismlauncher.cfg"
 
-        try {
-            TransferConfigFiles
-        } catch {
-            Write-Host "Wystapil blad: $_. Ponawianie operacji..." -ForegroundColor Red
-            TransferConfigFiles
+            # Sprawdzenie, czy plik istnieje i zawiera dane
+            if (Test-Path -Path $configFile) {
+                $fileContent = Get-Content -Path $configFile -ErrorAction Stop
+                if ($fileContent.Trim() -ne "") {
+                    Write-Host "Plik 'prismlauncher.cfg' znaleziony i zawiera dane. Pomijanie instalacji." -ForegroundColor Green
+                    return
+                }
+            }
+            
+            Write-Host "Plik 'prismlauncher.cfg' nie istnieje lub jest pusty. Pobieranie instalatora Prism Launcher..." -ForegroundColor Yellow
+            
+            $tempPath = [System.IO.Path]::GetTempPath()
+            $installerPath = Join-Path $tempPath "PrismLauncher-Windows-MinGW-w64-9.2.zip"
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/PrismLauncher-Windows-MinGW-w64-9.2.zip" -destinationPath $installerPath
+            $installPath = Join-Path $userProfile "AppData\Local\Programs\PrismLauncher"
+            
+            if (-Not (Test-Path -Path $installPath)) {
+                mkdir $installPath
+            }
+            
+            Expand-Archive -Path $installerPath -DestinationPath $installPath -Force
+            Write-Host "Instalacja Prism Launcher zakonczona." -ForegroundColor Green
+
+            $desktop = [Environment]::GetFolderPath("Desktop")
+            $shortcutPath = Join-Path $desktop "PrismLauncher.lnk"
+            $targetPath = Join-Path $installPath "PrismLauncher.exe"
+            
+            if (-Not (Test-Path -Path $shortcutPath)) {
+                $WScriptShell = New-Object -ComObject WScript.Shell
+                $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
+                $shortcut.TargetPath = $targetPath
+                $shortcut.Save()
+                Write-Host "Skrot do PrismLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
+            } else {
+                Write-Host "Skrot do PrismLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
+            }
         }
-    }
-    "6" {
-        exit
-    }
-    default {
-        Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
+        "3" {
+            Write-Host "Wybrano: Fjord Launcher dla uzytkownikow Minecraft Non-Premium." -ForegroundColor Green
+            
+            $userProfile = [Environment]::GetFolderPath("UserProfile")
+            $fjordLauncherDir = Join-Path $userProfile "AppData\Roaming\FjordLauncher"
+            $configFile = Join-Path $fjordLauncherDir "fjordlauncher.cfg"
+            
+            if (Test-Path -Path $configFile) {
+                $fileContent = Get-Content -Path $configFile -ErrorAction Stop
+                if ($fileContent.Trim() -ne "") {
+                    Write-Host "Plik 'fjordlauncher.cfg' znaleziony i zawiera dane. Pomijanie instalacji." -ForegroundColor Green
+                    return
+                }
+            }
+            
+            Write-Host "Plik 'fjordlauncher.cfg' nie istnieje lub jest pusty. Pobieranie instalatora Fjord Launcher..." -ForegroundColor Yellow
+            
+            $tempPath = [System.IO.Path]::GetTempPath()
+            $installerPath = Join-Path $tempPath "FjordLauncher-Windows-MinGW-w64-Setup-9.2.1.zip"
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/FjordLauncher-Windows-MinGW-w64-9.2.1.zip" -destinationPath $installerPath
+            
+            $installPath = Join-Path $userProfile "AppData\Local\Programs\FjordLauncher"
+            
+            if (-Not (Test-Path -Path $installPath)) {
+                mkdir $installPath
+            }
+            
+            Expand-Archive -Path $installerPath -DestinationPath $installPath -Force
+            Write-Host "Instalacja Fjord Launcher zakonczona." -ForegroundColor Green
+            
+            # Tworzenie skrotu na pulpicie
+            $desktop = [Environment]::GetFolderPath("Desktop")
+            $shortcutPath = Join-Path $desktop "FjordLauncher.lnk"
+            $targetPath = Join-Path $installPath "FjordLauncher.exe"
+            
+            if (-Not (Test-Path -Path $shortcutPath)) {
+                $WScriptShell = New-Object -ComObject WScript.Shell
+                $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
+                $shortcut.TargetPath = $targetPath
+                $shortcut.Save()
+                Write-Host "Skrot do FjordLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
+            } else {
+                Write-Host "Skrot do FjordLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
+            }
+        }
+        "4" {
+            Write-Host "Wybrano: Przywracanie konfiguracji Minecraft sprzed instalacji." -ForegroundColor Yellow
+            # Tutaj mozna dodac kod do przywracania poprzedniej konfiguracji
+            Write-Host "Ta opcja nie jest jeszcze dostepna (Work in progress)" -ForegroundColor Yellow
+        }
+        "5" {
+            function TransferConfigFiles {
+                Write-Host "Szukam instancji Minecraft..." -ForegroundColor Yellow
+                $userProfile = [Environment]::GetFolderPath("UserProfile")
+                $minecraftDir = Join-Path $userProfile ".\AppData\Roaming\.minecraft\versions"
+                $prismLauncherDir = Join-Path $userProfile ".\AppData\Roaming\PrismLauncher\instances"
+                $fjordLauncherDir = Join-Path $userProfile ".\AppData\Roaming\FjordLauncher\instances"
+
+                $instanceDirs = @()
+
+                if (Test-Path -Path $minecraftDir) {
+                    $minecraftInstances = Get-ChildItem -Path $minecraftDir -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName "minecraft\options.txt") } | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Oficjalny Launcher)" }
+                    $instanceDirs += $minecraftInstances
+                }
+
+                if (Test-Path -Path $prismLauncherDir) {
+                    $prismInstances = Get-ChildItem -Path $prismLauncherDir -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName "minecraft\options.txt") } | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Prism Launcher)" }
+                    $instanceDirs += $prismInstances
+                }
+
+                if (Test-Path -Path $fjordLauncherDir) {
+                    $fjordInstances = Get-ChildItem -Path $fjordLauncherDir -Directory | Where-Object { Test-Path -Path (Join-Path $_.FullName "minecraft\options.txt") } | Select-Object -ExpandProperty Name | ForEach-Object { "$_ (Fjord Launcher)" }
+                    $instanceDirs += $fjordInstances
+                }
+
+                if ($instanceDirs.Count -eq 0) {
+                    Write-Host "Nie znaleziono zadnych instancji Minecraft z plikiem 'options.txt'." -ForegroundColor Red
+                    return
+                } else {
+                    Write-Host "Znalezione instancje Minecraft:" -ForegroundColor Green
+                    $instanceDirs | ForEach-Object { Write-Host $_ -ForegroundColor Cyan }
+                }
+
+                $sourceInstance = Read-Host "Podaj nazwe instancji z ktorej chcesz przeniesc pliki konfiguracyjne" 
+                $destinationInstance = Read-Host "Podaj nazwe instancji do ktorej chcesz przeniesc pliki konfiguracyjne" 
+
+                $sourcePath = ""
+                $destinationPath = ""
+
+                if (Test-Path -Path (Join-Path $minecraftDir $sourceInstance)) {
+                    $sourcePath = Join-Path $minecraftDir $sourceInstance
+                } elseif (Test-Path -Path (Join-Path $prismLauncherDir $sourceInstance)) {
+                    $sourcePath = Join-Path $prismLauncherDir $sourceInstance
+                } elseif (Test-Path -Path (Join-Path $fjordLauncherDir $sourceInstance)) {
+                    $sourcePath = Join-Path $fjordLauncherDir $sourceInstance
+                } else {
+                    throw "Nie znaleziono instancji zrodlowej."
+                }
+
+                if (Test-Path -Path (Join-Path $minecraftDir $destinationInstance)) {
+                    $destinationPath = Join-Path $minecraftDir $destinationInstance
+                } elseif (Test-Path -Path (Join-Path $prismLauncherDir $destinationInstance)) {
+                    $destinationPath = Join-Path $prismLauncherDir $destinationInstance
+                } elseif (Test-Path -Path (Join-Path $fjordLauncherDir $destinationInstance)) {
+                    $destinationPath = Join-Path $fjordLauncherDir $destinationInstance
+                } else {
+                    throw "Nie znaleziono instancji docelowej."
+                }
+
+                $sourceOptionsPath = Join-Path $sourcePath "minecraft\options.txt"
+                $destinationOptionsPath = Join-Path $destinationPath "minecraft\options.txt"
+
+                if (Test-Path -Path $sourceOptionsPath) {
+                    Copy-Item -Path $sourceOptionsPath -Destination $destinationOptionsPath -Force
+                    Write-Host "Plik 'options.txt' zostal skopiowany z $sourceInstance do $destinationInstance." -ForegroundColor Green
+                } else {
+                    throw "Plik 'options.txt' nie istnieje w instancji zrodlowej."
+                }
+            }
+
+            try {
+                TransferConfigFiles
+            } catch {
+                Write-Host "Wystapil blad: $_. Ponawianie operacji..." -ForegroundColor Red
+                TransferConfigFiles
+            }
+        }
+        "6" {
+            exit
+        }
+        default {
+            Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
+        }
     }
 }
