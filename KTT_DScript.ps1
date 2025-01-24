@@ -114,7 +114,7 @@ switch ($choice) {
         $tempPath = [System.IO.Path]::GetTempPath()
         $installerPath = Join-Path $tempPath "FjordLauncher-Windows-MinGW-w64-Setup-9.2.1.exe"
         $downloadUrl = "https://dobraszajba.com:8000/FjordLauncher-Windows-MinGW-w64-Setup-9.2.1.exe"
-        Download-FileIfNotExists -url $downloadUrl -destinationPath $installerPath
+        DownloadFileIfNotExists -url $downloadUrl -destinationPath $installerPath
         Start-Process -FilePath $installerPath -Wait
         Write-Host "Uruchomiono instalator Fjord Launcher. Kontynuuj instalację zgodnie z instrukcjami." -ForegroundColor Green
 
