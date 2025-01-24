@@ -77,32 +77,40 @@ switch ($choice) {
         
         Write-Host "Plik 'prismlauncher.cfg' nie istnieje lub jest pusty. Pobieranie instalatora Prism Launcher..." -ForegroundColor Yellow
         
-        # Ścieżka do zapisu instalatora
         $tempPath = [System.IO.Path]::GetTempPath()
-        $installerPath = Join-Path $tempPath "PrismLauncher-Setup.exe"
-        $downloadUrl = "https://github.com/PrismLauncher/PrismLauncher/releases/download/9.2/PrismLauncher-Windows-MSVC-Setup-9.2.exe"
+        $installerPath = Join-Path $tempPath "PrismLauncher-Windows-MinGW-w64-9.2.zip"
+        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/PrismLauncher-Windows-MinGW-w64-9.2.zip" -destinationPath $installerPath
+        $installPath = Join-Path $userProfile "AppData\Local\Programs\PrismLauncher"
+        
+        if (-Not (Test-Path -Path $installPath)) {
+            mkdir $installPath
+        }
+        
+        Expand-Archive -Path $installerPath -DestinationPath $installPath -Force
+        Write-Host "Instalacja Prism Launcher zakonczona." -ForegroundColor Green
 
-        # Pobranie instalatora
-        Download-FileIfNotExists -url $downloadUrl -destinationPath $installerPath
-
-        # Uruchamianie instalatora
-        Start-Process -FilePath $installerPath -Wait
-        Write-Host "Uruchomiono instalator Prism Launcher. Kontynuuj instalację zgodnie z instrukcjami." -ForegroundColor Green
-
-        $prismInstallation = Read-Host "czy instalacja zostala zakonczona pomyślnie? (y/n)" -ForegroundColor Yellow
-        if ($prismInstallation -eq "y") {
-            Write-Host "Instalacja Prism Launcher zostala zakonczona." -ForegroundColor Green
+        $desktop = [Environment]::GetFolderPath("Desktop")
+        $shortcutPath = Join-Path $desktop "PrismLauncher.lnk"
+        $targetPath = Join-Path $installPath "PrismLauncher.exe"
+        
+        if (-Not (Test-Path -Path $shortcutPath)) {
+            $WScriptShell = New-Object -ComObject WScript.Shell
+            $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath = $targetPath
+            $shortcut.Save()
+            Write-Host "Skrot do PrismLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
         } else {
-            Write-Host "Sprobuj ponowic instalacje recznie a nastepnie uruchom ponownie skrypt" -ForegroundColor Red
+            Write-Host "Skrot do PrismLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
         }
     }
 
     "3" {
         Write-Host "Wybrano: Fjord Launcher dla uzytkownikow Minecraft Non-Premium." -ForegroundColor Green
-        Write-Host "Ta opcja nie jest jeszcze dostepna (Work in progress)" -ForegroundColor Yellow
+        
         $userProfile = [Environment]::GetFolderPath("UserProfile")
         $fjordLauncherDir = Join-Path $userProfile "AppData\Roaming\FjordLauncher"
         $configFile = Join-Path $fjordLauncherDir "fjordlauncher.cfg"
+        
         if (Test-Path -Path $configFile) {
             $fileContent = Get-Content -Path $configFile -ErrorAction Stop
             if ($fileContent.Trim() -ne "") {
@@ -110,16 +118,36 @@ switch ($choice) {
                 return
             }
         }
+        
         Write-Host "Plik 'fjordlauncher.cfg' nie istnieje lub jest pusty. Pobieranie instalatora Fjord Launcher..." -ForegroundColor Yellow
+        
         $tempPath = [System.IO.Path]::GetTempPath()
-        $installerPath = Join-Path $tempPath "FjordLauncher-Windows-MinGW-w64-Setup-9.2.1.exe"
-        $downloadUrl = "https://dobraszajba.com:8000/FjordLauncher-Windows-MinGW-w64-Setup-9.2.1.exe"
-        DownloadFileIfNotExists -url $downloadUrl -destinationPath $installerPath
-        Start-Process -FilePath $installerPath -Wait
-        Write-Host "Uruchomiono instalator Fjord Launcher. Kontynuuj instalację zgodnie z instrukcjami." -ForegroundColor Green
-
-
-
+        $installerPath = Join-Path $tempPath "FjordLauncher-Windows-MinGW-w64-Setup-9.2.1.zip"
+        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/FjordLauncher-Windows-MinGW-w64-9.2.1.zip" -destinationPath $installerPath
+        
+        $installPath = Join-Path $userProfile "AppData\Local\Programs\FjordLauncher"
+        
+        if (-Not (Test-Path -Path $installPath)) {
+            mkdir $installPath
+        }
+        
+        Expand-Archive -Path $installerPath -DestinationPath $installPath -Force
+        Write-Host "Instalacja Fjord Launcher zakonczona." -ForegroundColor Green
+        
+        # Tworzenie skrotu na pulpicie
+        $desktop = [Environment]::GetFolderPath("Desktop")
+        $shortcutPath = Join-Path $desktop "FjordLauncher.lnk"
+        $targetPath = Join-Path $installPath "FjordLauncher.exe"
+        
+        if (-Not (Test-Path -Path $shortcutPath)) {
+            $WScriptShell = New-Object -ComObject WScript.Shell
+            $shortcut = $WScriptShell.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath = $targetPath
+            $shortcut.Save()
+            Write-Host "Skrot do FjordLauncher.exe zostal utworzony na pulpicie." -ForegroundColor Green
+        } else {
+            Write-Host "Skrot do FjordLauncher.exe juz istnieje na pulpicie." -ForegroundColor Yellow
+        }
     }
     "4" {
         Write-Host "Wybrano: Przywracanie konfiguracji Minecraft sprzed instalacji." -ForegroundColor Yellow
