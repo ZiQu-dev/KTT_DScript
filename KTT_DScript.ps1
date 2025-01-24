@@ -12,15 +12,18 @@ function DownloadFileIfNotExists {
     }
 }
 
-Write-Host "Wybierz jedna z ponizszych opcji:" -ForegroundColor Cyan
-Write-Host "1: Jestem uzytkownikiem Minecraft Premium i chce uzyc oficjalnego launchera (UZYWAC TYLKO W OSTATECZNOSCI)" -ForegroundColor Red -BackgroundColor Gray
-Write-Host "2: Jestem uzytkownikiem Minecraft Premium i chce uzyc Prism Launcher (rekomendowane)"
-Write-Host "3: Jestem uzytkownikiem Minecraft Non-Premium i chce uzyc Fjord Launcher"
-Write-Host "4: Przywroc konfiguracje Minecraft sprzed instalacji (Wylacznie do uzytku po uzyciu opcji 1)"
-Write-Host "5: Przenies pliki konfiguracyjne miedzy instancjami" 
-Write-Host "6: Wyjscie" -ForegroundColor Yellow
 
-$choice = Read-Host "Wpisz numer odpowiadajacy Twojemu wyborowi"
+    Write-Host "Wybierz jedna z ponizszych opcji:" -ForegroundColor Cyan
+    Write-Host "1: Jestem uzytkownikiem Minecraft Premium i chce uzyc oficjalnego launchera (UZYWAC TYLKO W OSTATECZNOSCI)" -ForegroundColor Red -BackgroundColor Gray
+    Write-Host "2: Jestem uzytkownikiem Minecraft Premium i chce uzyc Prism Launcher (rekomendowane)"
+    Write-Host "3: Jestem uzytkownikiem Minecraft Non-Premium i chce uzyc Fjord Launcher"
+    Write-Host "4: Przywroc konfiguracje Minecraft sprzed instalacji (Wylacznie do uzytku po uzyciu opcji 1)"
+    Write-Host "5: Przenies pliki konfiguracyjne miedzy instancjami" 
+    Write-Host "6: Wyjscie" -ForegroundColor Yellow
+    
+    $choice = Read-Host "Wpisz numer odpowiadajacy Twojemu wyborowi"
+    
+
 
 switch ($choice) {
     "1" {
@@ -96,8 +99,27 @@ switch ($choice) {
 
     "3" {
         Write-Host "Wybrano: Fjord Launcher dla uzytkownikow Minecraft Non-Premium." -ForegroundColor Green
-        # Tutaj mozna dodac kod do instalacji lub konfiguracji Fjord Launchera
         Write-Host "Ta opcja nie jest jeszcze dostepna (Work in progress)" -ForegroundColor Yellow
+        $userProfile = [Environment]::GetFolderPath("UserProfile")
+        $fjordLauncherDir = Join-Path $userProfile "AppData\Roaming\FjordLauncher"
+        $configFile = Join-Path $fjordLauncherDir "fjordlauncher.cfg"
+        if (Test-Path -Path $configFile) {
+            $fileContent = Get-Content -Path $configFile -ErrorAction Stop
+            if ($fileContent.Trim() -ne "") {
+                Write-Host "Plik 'fjordlauncher.cfg' znaleziony i zawiera dane. Pomijanie instalacji." -ForegroundColor Green
+                return
+            }
+        }
+        Write-Host "Plik 'fjordlauncher.cfg' nie istnieje lub jest pusty. Pobieranie instalatora Fjord Launcher..." -ForegroundColor Yellow
+        $tempPath = [System.IO.Path]::GetTempPath()
+        $installerPath = Join-Path $tempPath "FjordLauncher-Windows-MinGW-w64-Setup-9.2.1.exe"
+        $downloadUrl = "https://dobraszajba.com:8000/FjordLauncher-Windows-MinGW-w64-Setup-9.2.1.exe"
+        Download-FileIfNotExists -url $downloadUrl -destinationPath $installerPath
+        Start-Process -FilePath $installerPath -Wait
+        Write-Host "Uruchomiono instalator Fjord Launcher. Kontynuuj instalację zgodnie z instrukcjami." -ForegroundColor Green
+
+
+
     }
     "4" {
         Write-Host "Wybrano: Przywracanie konfiguracji Minecraft sprzed instalacji." -ForegroundColor Yellow
