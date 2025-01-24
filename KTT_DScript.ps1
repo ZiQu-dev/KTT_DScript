@@ -14,15 +14,26 @@ switch ($choice) {
         $file1 = Join-Path $scriptPath "KTT MiniGry Alpha.mrpack"
         $file2 = Join-Path $scriptPath "mrpack-downloader-win.exe"
         $fabricInstaller = Join-Path $scriptPath "fabric-installer-1.0.1.exe"
+        if (-Not (Test-Path -Path $file1)) {
+            Invoke-WebRequest -Uri "https://dobraszajba.com:8000/KTT%20MiniGry%20Alpha.mrpack" -OutFile $file1
+            Write-Host "Pobrano: KTT MiniGry Alpha.mrpack" -ForegroundColor Cyan
+        } else {
+            Write-Host "Plik KTT MiniGry Alpha.mrpack juz istnieje. Pomijanie pobierania." -ForegroundColor Yellow
+        }
 
-        Invoke-WebRequest -Uri "https://dobraszajba.com:8000/KTT%20MiniGry%20Alpha.mrpack" -OutFile $file1
-        Write-Host "Pobrano: KTT MiniGry Alpha.mrpack" -ForegroundColor Cyan
+        if (-Not (Test-Path -Path $file2)) {
+            Invoke-WebRequest -Uri "https://dobraszajba.com:8000/mrpack-downloader-win.exe" -OutFile $file2
+            Write-Host "Pobrano: mrpack-downloader-win.exe" -ForegroundColor Cyan
+        } else {
+            Write-Host "Plik mrpack-downloader-win.exe juz istnieje. Pomijanie pobierania." -ForegroundColor Yellow
+        }
 
-        Invoke-WebRequest -Uri "https://dobraszajba.com:8000/mrpack-downloader-win.exe" -OutFile $file2
-        Write-Host "Pobrano: mrpack-downloader-win.exe" -ForegroundColor Cyan
-
-        Invoke-WebRequest -Uri "https://dobraszajba.com:8000/fabric-installer-1.0.1.exe" -OutFile $fabricInstaller
-        Write-Host "Pobrano: fabric-installer-1.0.1.exe" -ForegroundColor Cyan
+        if (-Not (Test-Path -Path $fabricInstaller)) {
+            Invoke-WebRequest -Uri "https://dobraszajba.com:8000/fabric-installer-1.0.1.exe" -OutFile $fabricInstaller
+            Write-Host "Pobrano: fabric-installer-1.0.1.exe" -ForegroundColor Cyan
+        } else {
+            Write-Host "Plik fabric-installer-1.0.1.exe juz istnieje. Pomijanie pobierania." -ForegroundColor Yellow
+        }
 
         # Instalacja Fabric
         $userProfile = [Environment]::GetFolderPath("UserProfile")
@@ -33,6 +44,15 @@ switch ($choice) {
         # Uruchamianie mrpack-downloader-win.exe
         Start-Process -FilePath $file2 -ArgumentList "`"$file1`" `"$outputDir`"" -Wait
         Write-Host "Zakonczono proces uruchamiania mrpack-downloader-win.exe" -ForegroundColor Green
+
+        # Zapytanie o usuniecie plikow
+        $removeFiles = Read-Host "Czy chcesz usunac pobrane pliki instalacyjne? (y/n)"
+        if ($removeFiles -eq "y") {
+            Remove-Item -Path $file1, $file2, $fabricInstaller -Force
+            Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
+        } else {
+            Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
+        }
     }
     "2" {
     Write-Host "Wybrano: Prism Launcher (rekomendowane dla uzytkownikow Minecraft Premium)." -ForegroundColor Green
