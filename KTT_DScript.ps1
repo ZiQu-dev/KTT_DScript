@@ -12,15 +12,14 @@ function DownloadFileIfNotExists {
         Write-Host "Plik $destinationPath juz istnieje. Pomijanie pobierania." -ForegroundColor Yellow
     }
 }
-
+1
 function Remove-FilesIfExist {
     param (
         [string]$FolderPath
     )
 
-    # Check if the folder exists
     if (-Not (Test-Path -Path $FolderPath)) {
-        Write-Host "The specified folder does not exist."
+        Write-Host "FOLDER NIE ISTNIEJE (BŁĄD INSTALACJI!)" -ForegroundColor Red
         return $false
     }
 
@@ -29,7 +28,7 @@ function Remove-FilesIfExist {
 
     # Check if there are any files
     if ($files.Count -gt 0) {
-        Write-Host "There are files in the folder. Deleting them..."
+        Write-Host "Znaleziono poprzednią paczkę w folderze mods. Usuwam." -ForegroundColor Green
         
         # Delete the files
         foreach ($file in $files) {
@@ -37,10 +36,10 @@ function Remove-FilesIfExist {
             Write-Host "Deleted: $($file.FullName)"
         }
 
-        Write-Host "All files have been deleted."
+        Write-Host "Usunięto pliki z folderu mods!" -ForegroundColor Green
         return $true
     } else {
-        Write-Host "There are no files in the folder."
+        Write-Host "Nie znaleziono plikow w folderze mods." -ForegroundColor Yellow
         return $false
     }
 }
@@ -122,7 +121,7 @@ while ($true) {
 # Example usage
 $folderPath = "C:\Your\Folder\Path"
 Remove-FilesIfExist -FolderPath $folderPath
-
+            while($true) {
                 switch ($chooseModpack) {
                     "1" {
                         Write-Host "Wybrano ZENE" -ForegroundColor Green
@@ -155,7 +154,42 @@ Remove-FilesIfExist -FolderPath $folderPath
             $outputDir = Join-Path $userProfile "AppData\Roaming\.minecraft"
             Start-Process -FilePath "java" -ArgumentList "-jar `"$fabricInstaller`" client -dir `"$outputDir`" -mcversion 1.20.4" -Wait
             Write-Host "Zakonczono instalacje Fabric" -ForegroundColor Green
-
+            while($true) {
+                Write-Host "UWAGA ABY KONTYNUOWAĆ NALEŻY USUNĄĆ POPRZEDNIE MODYFIKACJE Z FOLDERU MODS!" -ForegroundColor Red
+                $askUser = Read-Host "Czy chcesz usunac pobrane pliki instalacyjne? (TAK/NIE)"
+                switch($askUser) {
+                    "TAK" {
+                        
+                    }
+                    "NIE" {
+                        Write-Host "Przerwano instalacje mrpack-downloader-win.exe" -ForegroundColor Red
+                        Write-Host "Aby kontynuować należy usunąć lub przenieść pobrane modyfikacje." -ForegroundColor Yellow
+                        while ($true) {
+                            $continue = Read-Host "Czy chcesz kontynuować instalacje? (y/n)"
+                            switch($continue) {
+                                "y" {
+                                    break
+                                }
+                                "n" {
+                                    return
+                                }
+                                default {
+                                    Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
+                                }
+                            }
+                            if ($continue -in @("y", "n")) {
+                                break
+                            }
+                        }
+                    }
+                    default {
+                        Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
+                    }
+                }
+                if ($askUser -in @("TAK", "NIE")) {
+                    break
+                }
+            }
             # Uruchamianie mrpack-downloader-win.exe
             Start-Process -FilePath $file1 -ArgumentList "`"$file1`" `"$outputDir`"" -Wait
             Write-Host "Zakonczono proces uruchamiania mrpack-downloader-win.exe" -ForegroundColor Green
