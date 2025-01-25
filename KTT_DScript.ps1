@@ -5,12 +5,50 @@ function DownloadFileIfNotExists {
     )
 
     if (-Not (Test-Path -Path $destinationPath)) {
+        Write-Host "Rozpoczynanie pobierania: $destinationPath" -ForegroundColor Green
         Invoke-WebRequest -Uri $url -OutFile $destinationPath
         Write-Host "Pobrano: $destinationPath" -ForegroundColor Cyan
     } else {
         Write-Host "Plik $destinationPath juz istnieje. Pomijanie pobierania." -ForegroundColor Yellow
     }
 }
+
+function Remove-FilesIfExist {
+    param (
+        [string]$FolderPath
+    )
+
+    # Check if the folder exists
+    if (-Not (Test-Path -Path $FolderPath)) {
+        Write-Host "The specified folder does not exist."
+        return $false
+    }
+
+    # Get the files in the folder
+    $files = Get-ChildItem -Path $FolderPath -File
+
+    # Check if there are any files
+    if ($files.Count -gt 0) {
+        Write-Host "There are files in the folder. Deleting them..."
+        
+        # Delete the files
+        foreach ($file in $files) {
+            Remove-Item -Path $file.FullName -Force
+            Write-Host "Deleted: $($file.FullName)"
+        }
+
+        Write-Host "All files have been deleted."
+        return $true
+    } else {
+        Write-Host "There are no files in the folder."
+        return $false
+    }
+}
+
+# Example usage
+$mods = Join-Path $userProfile "AppData\Roaming\.minecraft\mods"
+# Remove-FilesIfExist -FolderPath $folderPath
+
 
 while ($true) {
     Write-Host "Wybierz jedna z ponizszych opcji:" -ForegroundColor Cyan
@@ -37,12 +75,80 @@ while ($true) {
 
             # Pobieranie plikow
             $scriptPath = (Get-Location).Path
-            $file1 = Join-Path $scriptPath "Battles.mrpack"
-            $file2 = Join-Path $scriptPath "mrpack-downloader-win.exe"
+            $mrpack1 = Join-Path $scriptPath "ZENA.mrpack"
+            $mrpack2 = Join-Path $scriptPath "Battles.mrpack"
+            $mrpack3 = Join-Path $scriptPath "Bingo.mrpack"
+            $file1 = Join-Path $scriptPath "mrpack-downloader-win.exe"
             $fabricInstaller = Join-Path $scriptPath "fabric-installer-1.0.1.exe"
+            
+            while ($true) {
+                Write-Host "Wybierz, które :" -ForegroundColor Cyan
+                Write-Host "1: ZENA" -ForegroundColor Green
+                Write-Host "2: Battles" -ForegroundColor Yellow
+                Write-Host "3: Bingo" -ForegroundColor DarkGreen
+                $chooseModpack = Read-Host "Wpisz numer odpowiadajacy Twojemu wyborowi"
+            function Remove-FilesIfExist {
+    param (
+        [string]$FolderPath
+    )
 
-            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Battles.mrpack" -destinationPath $file1
-            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/mrpack-downloader-win.exe" -destinationPath $file2
+    # Check if the folder exists
+    if (-Not (Test-Path -Path $FolderPath)) {
+        Write-Host "The specified folder does not exist."
+        return $false
+    }
+
+    # Get the files in the folder
+    $files = Get-ChildItem -Path $FolderPath -File
+
+    # Check if there are any files
+    if ($files.Count -gt 0) {
+        Write-Host "There are files in the folder. Deleting them..."
+        
+        # Delete the files
+        foreach ($file in $files) {
+            Remove-Item -Path $file.FullName -Force
+            Write-Host "Deleted: $($file.FullName)"
+        }
+
+        Write-Host "All files have been deleted."
+        return $true
+    } else {
+        Write-Host "There are no files in the folder."
+        return $false
+    }
+}
+
+# Example usage
+$folderPath = "C:\Your\Folder\Path"
+Remove-FilesIfExist -FolderPath $folderPath
+
+                switch ($chooseModpack) {
+                    "1" {
+                        Write-Host "Wybrano ZENE" -ForegroundColor Green
+                        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/ZENA.mrpack" -destinationPath $mrpack1
+                        break
+                    }
+                    "2" {
+                        Write-Host "Wybrano Battles" -ForegroundColor Yellow
+                        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Battles.mrpack" -destinationPath $mrpack2
+                        break
+                    }
+                    "3" {
+                        Write-Host "Wybrano Bingo" -ForegroundColor DarkGreen
+                        DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Bingo.mrpack" -destinationPath $mrpack3
+                        break
+                    }
+                    default {
+                        Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
+                    }
+                }
+                if ($chooseModpack -in @("1", "2", "3")) {
+                    break
+                }
+            }
+            
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/mrpack-downloader-win.exe" -destinationPath $file1
             DownloadFileIfNotExists -url "https://dobraszajba.com:8000/fabric-installer-1.0.1.exe" -destinationPath $fabricInstaller
 
             # Instalacja Fabric
@@ -51,13 +157,26 @@ while ($true) {
             Write-Host "Zakonczono instalacje Fabric" -ForegroundColor Green
 
             # Uruchamianie mrpack-downloader-win.exe
-            Start-Process -FilePath $file2 -ArgumentList "`"$file1`" `"$outputDir`"" -Wait
+            Start-Process -FilePath $file1 -ArgumentList "`"$file1`" `"$outputDir`"" -Wait
             Write-Host "Zakonczono proces uruchamiania mrpack-downloader-win.exe" -ForegroundColor Green
 
             # Zapytanie o usuniecie plikow
             $removeFiles = Read-Host "Czy chcesz usunac pobrane pliki instalacyjne? (y/n)"
             if ($removeFiles -eq "y") {
-            Remove-Item -Path $file1, $file2, $fabricInstaller -Force
+            
+            switch ($chooseModpack) {
+                "1" {
+                    Remove-Item -Path $mrpack1 -Force
+                }
+                "2" {
+                    Remove-Item -Path $mrpack2 -Force
+                }
+                "3" {
+                    Remove-Item -Path $mrpack3 -Force
+                }
+            }
+
+            Remove-Item -Path $file1, $fabricInstaller -Force
             Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
             } else {
             Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
@@ -71,11 +190,11 @@ while ($true) {
             $prismLauncherDir = Join-Path $userProfile "AppData\Roaming\PrismLauncher"
             $configFile = Join-Path $prismLauncherDir "prismlauncher.cfg"
             $scriptPath = (Get-Location).Path
+            $mrpack1 = Join-Path $scriptPath "ZENA.mrpack"
             $mrpack1 = Join-Path $scriptPath "Battles.mrpack"
-            $mrpack2 = Join-Path $scriptPath "ZENA.mrpack"
             $mrpack3 = Join-Path $scriptPath "Bingo.mrpack"
-            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Battles.mrpack" -destinationPath $mrpack1
-            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/ZENA.mrpack" -destinationPath $mrpack2
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/ZENA.mrpack" -destinationPath $mrpack1
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Battles.mrpack" -destinationPath $mrpack2
             DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Bingo.mrpack" -destinationPath $mrpack3
             # Sprawdzenie, czy plik istnieje i zawiera dane
             if (Test-Path -Path $configFile) {
