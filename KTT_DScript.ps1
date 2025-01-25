@@ -168,9 +168,37 @@ Remove-FilesIfExist -FolderPath $folderPath
                             $continue = Read-Host "Czy chcesz kontynuować instalacje? (y/n)"
                             switch($continue) {
                                 "y" {
+                                    Remove-FilesIfExist -FolderPath $mods
                                     break
                                 }
                                 "n" {
+                                    while($true) {
+                                    $removeFiles = Read-Host "Czy chcesz usunac pobrane pliki instalacyjne? (y/n)"
+                                    switch($removeFiles) {
+                                        "y" {
+                                            switch ($chooseModpack) {
+                                                "1" {
+                                                    Remove-Item -Path $mrpack1 -Force
+                                                }
+                                                "2" {
+                                                    Remove-Item -Path $mrpack2 -Force
+                                                }
+                                                "3" {
+                                                    Remove-Item -Path $mrpack3 -Force
+                                                }
+                                        }
+                                            Remove-Item -Path $file1, $fabricInstaller -Force
+                                            Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
+                                            break
+                                        }
+                                        "n" {
+                                            Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
+                                            break
+                                        }
+                                        }
+                                        if ($removeFiles -in @("y", "n")) {
+                                            break
+                                        }
                                     return
                                 }
                                 default {
@@ -194,26 +222,33 @@ Remove-FilesIfExist -FolderPath $folderPath
             Start-Process -FilePath $file1 -ArgumentList "`"$file1`" `"$outputDir`"" -Wait
             Write-Host "Zakonczono proces uruchamiania mrpack-downloader-win.exe" -ForegroundColor Green
 
-            # Zapytanie o usuniecie plikow
+            while($true) {
             $removeFiles = Read-Host "Czy chcesz usunac pobrane pliki instalacyjne? (y/n)"
-            if ($removeFiles -eq "y") {
-            
-            switch ($chooseModpack) {
-                "1" {
-                    Remove-Item -Path $mrpack1 -Force
+            switch($removeFiles) {
+                "y" {
+                    switch ($chooseModpack) {
+                        "1" {
+                            Remove-Item -Path $mrpack1 -Force
+                        }
+                        "2" {
+                            Remove-Item -Path $mrpack2 -Force
+                        }
+                        "3" {
+                            Remove-Item -Path $mrpack3 -Force
+                        }
                 }
-                "2" {
-                    Remove-Item -Path $mrpack2 -Force
+                    Remove-Item -Path $file1, $fabricInstaller -Force
+                    Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
+                    break
                 }
-                "3" {
-                    Remove-Item -Path $mrpack3 -Force
+                "n" {
+                    Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
+                    break
                 }
-            }
-
-            Remove-Item -Path $file1, $fabricInstaller -Force
-            Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
-            } else {
-            Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
+                }
+                if ($removeFiles -in @("y", "n")) {
+                    break
+                }
             }
         }
         "2" {
