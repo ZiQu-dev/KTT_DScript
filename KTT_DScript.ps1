@@ -20,7 +20,8 @@ function Remove-FilesIfExist {
 
     if (-Not (Test-Path -Path $FolderPath)) {
         Write-Host "FOLDER NIE ISTNIEJE (BŁĄD INSTALACJI!)" -ForegroundColor Red
-        return
+        Write-Host "PRZERYWANIE INSTALACJI!" -ForegroundColor Red
+        exit
     }
 
     # Get the files in the folder
