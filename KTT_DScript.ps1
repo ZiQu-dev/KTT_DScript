@@ -44,6 +44,7 @@ function Remove-FilesIfExist {
 }
 
 # Example usage
+$userProfile = [Environment]::GetFolderPath("UserProfile")
 $mods = Join-Path $userProfile "AppData\Roaming\.minecraft\mods"
 # Remove-FilesIfExist -FolderPath $folderPath
 
