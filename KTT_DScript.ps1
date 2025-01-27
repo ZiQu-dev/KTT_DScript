@@ -81,7 +81,7 @@ while ($true) {
                 Write-Host "Wybierz, które :" -ForegroundColor Cyan
                 Write-Host "1: ZENA" -ForegroundColor Green
                 Write-Host "2: Battles" -ForegroundColor Yellow
-                Write-Host "3: Bingo" -ForegroundColor DarkGreen
+                Write-Host "3: Bingo" -ForegroundColor Blue
                 $chooseModpack = Read-Host "Wpisz numer odpowiadajacy Twojemu wyborowi"
                 switch ($chooseModpack) {
                     "1" {
@@ -97,7 +97,7 @@ while ($true) {
                         break
                     }
                     "3" {
-                        Write-Host "Wybrano Bingo" -ForegroundColor DarkGreen
+                        Write-Host "Wybrano Bingo" -ForegroundColor Blue
                         DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Bingo.mrpack" -destinationPath $mrpack3
                         $dwmrpack = $mrpack3
                         break
