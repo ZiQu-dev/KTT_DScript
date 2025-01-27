@@ -37,17 +37,14 @@ function Remove-FilesIfExist {
         }
 
         Write-Host "Usunięto pliki z folderu mods!" -ForegroundColor Green
-        return $true
     } else {
         Write-Host "Nie znaleziono plikow w folderze mods." -ForegroundColor Yellow
-        return $false
     }
 }
 
 # Example usage
 $mods = Join-Path $userProfile "AppData\Roaming\.minecraft\mods"
 # Remove-FilesIfExist -FolderPath $folderPath
-
 
 while ($true) {
     Write-Host "Wybierz jedna z ponizszych opcji:" -ForegroundColor Cyan
@@ -77,65 +74,32 @@ while ($true) {
             $mrpack1 = Join-Path $scriptPath "ZENA.mrpack"
             $mrpack2 = Join-Path $scriptPath "Battles.mrpack"
             $mrpack3 = Join-Path $scriptPath "Bingo.mrpack"
-            $file1 = Join-Path $scriptPath "mrpack-downloader-win.exe"
+            $downloader = Join-Path $scriptPath "mrpack-downloader-win.exe"
             $fabricInstaller = Join-Path $scriptPath "fabric-installer-1.0.1.exe"
-            
-            while ($true) {
+
+            while($true) {
                 Write-Host "Wybierz, które :" -ForegroundColor Cyan
                 Write-Host "1: ZENA" -ForegroundColor Green
                 Write-Host "2: Battles" -ForegroundColor Yellow
                 Write-Host "3: Bingo" -ForegroundColor DarkGreen
                 $chooseModpack = Read-Host "Wpisz numer odpowiadajacy Twojemu wyborowi"
-            function Remove-FilesIfExist {
-    param (
-        [string]$FolderPath
-    )
-
-    # Check if the folder exists
-    if (-Not (Test-Path -Path $FolderPath)) {
-        Write-Host "The specified folder does not exist."
-        return $false
-    }
-
-    # Get the files in the folder
-    $files = Get-ChildItem -Path $FolderPath -File
-
-    # Check if there are any files
-    if ($files.Count -gt 0) {
-        Write-Host "There are files in the folder. Deleting them..."
-        
-        # Delete the files
-        foreach ($file in $files) {
-            Remove-Item -Path $file.FullName -Force
-            Write-Host "Deleted: $($file.FullName)"
-        }
-
-        Write-Host "All files have been deleted."
-        return $true
-    } else {
-        Write-Host "There are no files in the folder."
-        return $false
-    }
-}
-
-# Example usage
-$folderPath = "C:\Your\Folder\Path"
-Remove-FilesIfExist -FolderPath $folderPath
-            while($true) {
                 switch ($chooseModpack) {
                     "1" {
                         Write-Host "Wybrano ZENE" -ForegroundColor Green
                         DownloadFileIfNotExists -url "https://dobraszajba.com:8000/ZENA.mrpack" -destinationPath $mrpack1
+                        $dwmrpack = $mrpack1
                         break
                     }
                     "2" {
                         Write-Host "Wybrano Battles" -ForegroundColor Yellow
                         DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Battles.mrpack" -destinationPath $mrpack2
+                        $dwmrpack = $mrpack2
                         break
                     }
                     "3" {
                         Write-Host "Wybrano Bingo" -ForegroundColor DarkGreen
                         DownloadFileIfNotExists -url "https://dobraszajba.com:8000/Bingo.mrpack" -destinationPath $mrpack3
+                        $dwmrpack = $mrpack3
                         break
                     }
                     default {
@@ -147,7 +111,7 @@ Remove-FilesIfExist -FolderPath $folderPath
                 }
             }
             
-            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/mrpack-downloader-win.exe" -destinationPath $file1
+            DownloadFileIfNotExists -url "https://dobraszajba.com:8000/mrpack-downloader-win.exe" -destinationPath $downloader
             DownloadFileIfNotExists -url "https://dobraszajba.com:8000/fabric-installer-1.0.1.exe" -destinationPath $fabricInstaller
 
             # Instalacja Fabric
@@ -156,10 +120,11 @@ Remove-FilesIfExist -FolderPath $folderPath
             Write-Host "Zakonczono instalacje Fabric" -ForegroundColor Green
             while($true) {
                 Write-Host "UWAGA ABY KONTYNUOWAĆ NALEŻY USUNĄĆ POPRZEDNIE MODYFIKACJE Z FOLDERU MODS!" -ForegroundColor Red
-                $askUser = Read-Host "Czy chcesz usunac pobrane pliki instalacyjne? (TAK/NIE)"
+                $askUser = Read-Host "Czy chcesz usunac pobrane poprzednio mody? (TAK/NIE)"
                 switch($askUser) {
                     "TAK" {
-                        
+                        Remove-FilesIfExist -FolderPath $mods
+                        break
                     }
                     "NIE" {
                         Write-Host "Przerwano instalacje mrpack-downloader-win.exe" -ForegroundColor Red
@@ -187,13 +152,16 @@ Remove-FilesIfExist -FolderPath $folderPath
                                                     Remove-Item -Path $mrpack3 -Force
                                                 }
                                         }
-                                            Remove-Item -Path $file1, $fabricInstaller -Force
+                                            Remove-Item -Path $downloader, $fabricInstaller -Force
                                             Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
-                                            break
+                                            return
                                         }
                                         "n" {
                                             Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
-                                            break
+                                            return
+                                        }
+                                        default {
+                                            Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
                                         }
                                         }
                                         if ($removeFiles -in @("y", "n")) {
@@ -201,25 +169,27 @@ Remove-FilesIfExist -FolderPath $folderPath
                                         }
                                     return
                                 }
+                                }
                                 default {
                                     Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
                                 }
                             }
-                            if ($continue -in @("y", "n")) {
-                                break
-                            }
+                        if ($continue -in @("y", "n")) {
+                            break
                         }
                     }
-                    default {
-                        Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
                     }
+                default {
+                    Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
+                }
+                    
                 }
                 if ($askUser -in @("TAK", "NIE")) {
                     break
                 }
             }
             # Uruchamianie mrpack-downloader-win.exe
-            Start-Process -FilePath $file1 -ArgumentList "`"$file1`" `"$outputDir`"" -Wait
+            Start-Process -FilePath $downloader -ArgumentList "`"$dwmrpack`" `"$outputDir`"" -Wait
             Write-Host "Zakonczono proces uruchamiania mrpack-downloader-win.exe" -ForegroundColor Green
 
             while($true) {
@@ -237,7 +207,7 @@ Remove-FilesIfExist -FolderPath $folderPath
                             Remove-Item -Path $mrpack3 -Force
                         }
                 }
-                    Remove-Item -Path $file1, $fabricInstaller -Force
+                    Remove-Item -Path $downloader, $fabricInstaller -Force
                     Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
                     break
                 }
