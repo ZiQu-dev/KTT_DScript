@@ -20,7 +20,7 @@ function Remove-FilesIfExist {
 
     if (-Not (Test-Path -Path $FolderPath)) {
         Write-Host "FOLDER NIE ISTNIEJE (BŁĄD INSTALACJI!)" -ForegroundColor Red
-        return $false
+        return
     }
 
     # Get the files in the folder
@@ -154,11 +154,11 @@ while ($true) {
                                         }
                                             Remove-Item -Path $downloader, $fabricInstaller -Force
                                             Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
-                                            return
+                                            exit
                                         }
                                         "n" {
                                             Write-Host "Pobrane pliki instalacyjne nie zostaly usuniete." -ForegroundColor Yellow
-                                            return
+                                            exit
                                         }
                                         default {
                                             Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
