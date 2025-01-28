@@ -208,7 +208,7 @@ while ($true) {
                         "3" {
                             Remove-Item -Path $mrpack3 -Force
                         }
-                }
+                    }
                     Remove-Item -Path $downloader, $fabricInstaller -Force
                     Write-Host "Pobrane pliki instalacyjne zostaly usuniete." -ForegroundColor Green
                     break
