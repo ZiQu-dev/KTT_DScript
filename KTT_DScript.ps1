@@ -359,7 +359,7 @@ while ($true) {
                 return
             }
             Remove-Item -LiteralPath $mcpath -Force -Recurse
-            Move-item -Force -Recurse -Verbose $mcpathcopy -Destination $mcpath
+            Move-item -Force -Verbose $mcpathcopy -Destination $mcpath
             #Write-Host "Ta opcja nie jest jeszcze dostepna (Work in progress)" -ForegroundColor Yellow
         }
         "5" {
