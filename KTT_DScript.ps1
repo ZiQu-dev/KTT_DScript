@@ -46,6 +46,8 @@ function Remove-FilesIfExist {
 # Example usage
 $userProfile = [Environment]::GetFolderPath("UserProfile")
 $mods = Join-Path $userProfile "AppData\Roaming\.minecraft\mods"
+$mcpath = Join-Path $userProfile "AppData\Roaming\.minecraft"
+$mcpathcopy = Join-Path $userProfile "AppData\Roaming\.minecraftcopy"
 # Remove-FilesIfExist -FolderPath $folderPath
 
 while ($true) {
@@ -53,7 +55,7 @@ while ($true) {
     Write-Host "1: Jestem uzytkownikiem Minecraft Premium i chce uzyc oficjalnego launchera (UZYWAC TYLKO W OSTATECZNOSCI)" -ForegroundColor Red -BackgroundColor Gray
     Write-Host "2: Jestem uzytkownikiem Minecraft Premium i chce uzyc Prism Launcher (rekomendowane)"
     Write-Host "3: Jestem uzytkownikiem Minecraft Non-Premium i chce uzyc Fjord Launcher"
-    Write-Host "4: Przywroc konfiguracje Minecraft sprzed instalacji (Wylacznie do uzytku po uzyciu opcji 1)"
+    Write-Host "4: Przywroc kopie zapasową Minecraft sprzed instalacji (Wylacznie do uzytku po uzyciu opcji 1 i zapisaniu kopii zapasowej)"
     Write-Host "5: Przenies pliki konfiguracyjne miedzy instancjami" 
     Write-Host "6: Wyjscie" -ForegroundColor Yellow
     
@@ -64,11 +66,28 @@ while ($true) {
             Write-Host "Wybrano: Oficjalny launcher Minecraft Premium." -ForegroundColor Green
             
             $userProfile = [Environment]::GetFolderPath("UserProfile")
-            $minecraftDir = Join-Path $userProfile "AppData\Roaming\.minecraft"
             
-            if (-Not (Test-Path -Path $minecraftDir)) {
+            if (-Not (Test-Path -Path $mcpath)) {
                 Write-Host "Nie znaleziono folderu .minecraft. Twoja instalacja Minecraft moze byc uszkodzona" -ForegroundColor Red
                 return
+            }
+
+            while($true) {
+                $removeFiles = Read-Host "Czy chcesz zrobić kopię zapasową .minecraft? (y/n)"
+                switch($removeFiles) {
+                    "y" {
+                        Copy-item -Force -Recurse -Verbose $mcpath -Destination $mcpathcopy
+                    }
+                    "n" {
+                        break
+                    }
+                    default {
+                        Write-Host "Nieprawidlowy wybor. Sprobuj ponownie." -ForegroundColor Red
+                    }
+                }
+                if ($removeFiles -in @("y", "n")) {
+                    break
+                }
             }
 
             # Pobieranie plikow
@@ -117,8 +136,8 @@ while ($true) {
             DownloadFileIfNotExists -url "https://dobraszajba.com:8000/fabric-installer-1.0.1.exe" -destinationPath $fabricInstaller
 
             # Instalacja Fabric
-            $outputDir = Join-Path $userProfile "AppData\Roaming\.minecraft"
-            Start-Process -FilePath "java" -ArgumentList "-jar `"$fabricInstaller`" client -dir `"$outputDir`" -mcversion 1.20.4" -Wait
+            $mcpath = Join-Path $userProfile "AppData\Roaming\.minecraft"
+            Start-Process -FilePath "java" -ArgumentList "-jar `"$fabricInstaller`" client -dir `"$mcpath`" -mcversion 1.20.4" -Wait
             Write-Host "Zakonczono instalacje Fabric" -ForegroundColor Green
             while($true) {
                 Write-Host "UWAGA ABY KONTYNUOWAĆ NALEŻY USUNĄĆ POPRZEDNIE MODYFIKACJE Z FOLDERU MODS!" -ForegroundColor Red
@@ -169,7 +188,6 @@ while ($true) {
                                         if ($removeFiles -in @("y", "n")) {
                                             break
                                         }
-                                    return
                                 }
                                 }
                                 default {
@@ -191,7 +209,7 @@ while ($true) {
                 }
             }
             # Uruchamianie mrpack-downloader-win.exe
-            Start-Process -FilePath $downloader -ArgumentList "`"$dwmrpack`" `"$outputDir`"" -Wait
+            Start-Process -FilePath $downloader -ArgumentList "`"$dwmrpack`" `"$mcpath`"" -Wait
             Write-Host "Zakonczono proces uruchamiania mrpack-downloader-win.exe" -ForegroundColor Green
 
             while($true) {
@@ -335,9 +353,14 @@ while ($true) {
             Write-Host "Fjord Launcher zostal uruchomiony." -ForegroundColor Green
         }
         "4" {
-            Write-Host "Wybrano: Przywracanie konfiguracji Minecraft sprzed instalacji." -ForegroundColor Yellow
-            # Tutaj mozna dodac kod do przywracania poprzedniej konfiguracji
-            Write-Host "Ta opcja nie jest jeszcze dostepna (Work in progress)" -ForegroundColor Yellow
+            Write-Host "Wybrano: Przywracanie kopii zapaowej Minecraft sprzed instalacji." -ForegroundColor Yellow
+            if (-Not (Test-Path -Path $mcpath)) {
+                Write-Host "Nie znaleziono folderu .minecraft. Twoja instalacja Minecraft moze byc uszkodzona" -ForegroundColor Red
+                return
+            }
+            Remove-Item -LiteralPath $mcpath -Force -Recurse
+            Move-item -Force -Recurse -Verbose $mcpathcopy -Destination $mcpath
+            #Write-Host "Ta opcja nie jest jeszcze dostepna (Work in progress)" -ForegroundColor Yellow
         }
         "5" {
             function TransferConfigFiles {
